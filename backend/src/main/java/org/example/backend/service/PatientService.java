@@ -1,9 +1,8 @@
-
-        package org.example.backend.service;
+package org.example.backend.service;
 
 import org.example.backend.dto.PatientRequest;
 import org.example.backend.exception.PatientNotFoundException;
-import org.example.backend.kafka.PatientEventProducer;
+import org.example.backend.Kafka.PatientEventProducer;
 import org.example.backend.model.PatientTwin;
 import org.example.backend.model.VitalSigns;
 import org.example.backend.repository.PatientRepository;
@@ -116,18 +115,27 @@ public class PatientService {
         patientRepository.delete(patient);
     }
 
-    // Update patient vitals
+    // Update patient vitals through Kafka
     public PatientTwin updateVitals(
             String patientId,
             VitalSigns vitals) {
 
-        PatientTwin patient = getPatient(patientId);
+        // First verify that the patient exists
+        getPatient(patientId);
 
+        // Add timestamp to the incoming vital data
         vitals.setTimestamp(LocalDateTime.now());
 
-        patient.setLatestVitals(vitals);
+        // Publish vitals update event to Kafka
+        patientEventProducer.publishVitalsUpdated(
+                patientId,
+                vitals.getHeartRate(),
+                vitals.getSpo2(),
+                vitals.getTemperature()
+        );
 
-        return patientRepository.save(patient);
+        // MongoDB will be updated by the Kafka Consumer
+        return getPatient(patientId);
     }
 
     // Patient 360

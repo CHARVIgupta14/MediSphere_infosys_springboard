@@ -91,7 +91,17 @@ public class fhirService {
 
         PatientTwin twin = fhirPatientMapper.toPatientTwin(patient);
 
-        return patientRepository.save(twin);
+        return patientRepository
+                .findByPatientId(patientId)
+                .map(existingPatient -> {
+
+                    existingPatient.setName(twin.getName());
+                    existingPatient.setAge(twin.getAge());
+                    existingPatient.setGender(twin.getGender());
+
+                    return patientRepository.save(existingPatient);
+                })
+                .orElseGet(() -> patientRepository.save(twin));
     }
 
     // Convert FHIR Patient → JSON
