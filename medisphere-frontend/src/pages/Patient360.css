@@ -1,0 +1,87 @@
+.patient360-page {
+  width: 100%;
+}
+
+.back-btn {
+  background: none;
+  border: 1px solid #cbd5e1;
+  color: #475569;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+
+.back-btn:hover {
+  background: #f1f5f9;
+}
+
+.page-header {
+  margin-bottom: 22px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.p360-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.p360-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.p360-card h2 {
+  margin: 0 0 14px 0;
+  font-size: 16px;
+  color: #1e293b;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.info-row span:first-child {
+  color: #64748b;
+}
+
+.info-row span:last-child {
+  color: #1e293b;
+  font-weight: 500;
+  text-align: right;
+}
+
+.list-block {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 14px;
+  color: #334155;
+}
+
+.list-block li {
+  padding: 4px 0;
+}
+
+.vitals-grid {
+  display: flex;
+  flex-direction: column;
+}

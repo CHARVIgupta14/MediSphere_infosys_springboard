@@ -1,0 +1,28 @@
+.error-box {
+  background: #fdecec;
+  border: 1px solid #f5b5b5;
+  color: #9b2c2c;
+  padding: 18px 20px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.error-text {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+}
+
+.retry-btn {
+  background: #9b2c2c;
+  color: #fff;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.retry-btn:hover {
+  background: #7f2323;
+}

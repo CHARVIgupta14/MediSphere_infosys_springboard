@@ -1,7 +1,9 @@
-package org.example.backend.service;
+
+        package org.example.backend.service;
 
 import org.example.backend.dto.PatientRequest;
 import org.example.backend.exception.PatientNotFoundException;
+import org.example.backend.kafka.PatientEventProducer;
 import org.example.backend.model.PatientTwin;
 import org.example.backend.model.VitalSigns;
 import org.example.backend.repository.PatientRepository;
@@ -15,9 +17,14 @@ import java.util.List;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final PatientEventProducer patientEventProducer;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(
+            PatientRepository patientRepository,
+            PatientEventProducer patientEventProducer) {
+
         this.patientRepository = patientRepository;
+        this.patientEventProducer = patientEventProducer;
     }
 
     // Create a new patient
@@ -49,7 +56,16 @@ public class PatientService {
                         : new ArrayList<>()
         );
 
-        return patientRepository.save(patient);
+        // Save patient to MongoDB
+        PatientTwin savedPatient = patientRepository.save(patient);
+
+        // Publish PatientCreated event to Kafka
+        patientEventProducer.publishPatientCreated(
+                savedPatient.getPatientId(),
+                savedPatient.getName()
+        );
+
+        return savedPatient;
     }
 
     // Get all patients

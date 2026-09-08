@@ -1,0 +1,86 @@
+.fhir-page {
+  width: 100%;
+}
+
+.page-header {
+  margin-bottom: 22px;
+}
+
+.page-header h1 {
+  margin: 0 0 4px 0;
+  font-size: 24px;
+  color: #1e293b;
+}
+
+.page-subtitle {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.fhir-table-wrapper {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  overflow-x: auto;
+}
+
+.fhir-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.fhir-table th,
+.fhir-table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  white-space: nowrap;
+}
+
+.fhir-table th {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 12.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  background: #f8fafc;
+}
+
+.fhir-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.import-btn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.import-btn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.import-btn:disabled {
+  background: #93b4f5;
+  cursor: not-allowed;
+}
+
+.import-success {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.import-error {
+  color: #b91c1c;
+  font-size: 12px;
+  margin-top: 4px;
+  max-width: 220px;
+  white-space: normal;
+}

@@ -1,0 +1,11 @@
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: 46px 20px;
+  font-size: 14px;
+}
+
+.empty-state-compact {
+  padding: 18px 10px;
+  font-size: 13px;
+}

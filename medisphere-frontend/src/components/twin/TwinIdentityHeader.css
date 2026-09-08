@@ -1,0 +1,85 @@
+.twin-header {
+  background: linear-gradient(135deg, var(--color-navy-900) 0%, var(--color-navy-700) 100%);
+  color: #fff;
+  padding: 26px 28px;
+  border: none;
+}
+
+.twin-header-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+
+.twin-header-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.twin-header-id {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 4px;
+}
+
+.twin-header-visual {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.twin-visual-ring {
+  width: 58px;
+  height: 58px;
+  min-width: 58px;
+  border-radius: 50%;
+  border: 2px solid var(--color-teal-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.twin-visual-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--color-teal-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 20px;
+  color: #fff;
+}
+
+.twin-visual-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.twin-visual-row .badge {
+  background: rgba(52, 211, 153, 0.16);
+  color: #6ee7b7;
+}
+
+.twin-visual-source {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 560px) {
+  .twin-header {
+    padding: 20px;
+  }
+  .twin-header-name {
+    font-size: 20px;
+  }
+}

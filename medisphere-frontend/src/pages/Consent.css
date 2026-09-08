@@ -1,0 +1,27 @@
+.consent-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.consent-card {
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.consent-card h3 {
+  font-size: 15px;
+  color: var(--color-text-primary);
+}
+
+.consent-card p {
+  font-size: 13.5px;
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.consent-card .badge {
+  width: fit-content;
+}

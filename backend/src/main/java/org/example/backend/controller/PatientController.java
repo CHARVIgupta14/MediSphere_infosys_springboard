@@ -2,10 +2,10 @@ package org.example.backend.controller;
 
 
 
-import com.medisphere.backend.dto.PatientRequest;
-import com.medisphere.backend.model.PatientTwin;
-import com.medisphere.backend.model.VitalSigns;
-import com.medisphere.backend.service.PatientService;
+import org.example.backend.dto.PatientRequest;
+import org.example.backend.model.PatientTwin;
+import org.example.backend.model.VitalSigns;
+import org.example.backend.service.PatientService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

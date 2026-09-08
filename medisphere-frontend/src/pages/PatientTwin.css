@@ -1,0 +1,17 @@
+.patient-twin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.back-link {
+  width: fit-content;
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+.patient-twin-content {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}

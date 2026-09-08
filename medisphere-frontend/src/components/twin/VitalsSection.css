@@ -1,0 +1,28 @@
+.vitals-section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.vitals-section-header .section-title {
+  margin-bottom: 0;
+}
+
+.vitals-updated {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.vitals-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 700px) {
+  .vitals-grid {
+    grid-template-columns: 1fr;
+  }
+}
