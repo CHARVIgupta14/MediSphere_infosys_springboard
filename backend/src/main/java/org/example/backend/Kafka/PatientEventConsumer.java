@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.backend.model.PatientTwin;
 import org.example.backend.model.VitalSigns;
 import org.example.backend.repository.PatientRepository;
+import org.example.backend.service.PredictionService;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -14,13 +15,16 @@ public class PatientEventConsumer {
 
     private final PatientRepository patientRepository;
     private final ObjectMapper objectMapper;
+    private final PredictionService predictionService;
 
     public PatientEventConsumer(
             PatientRepository patientRepository,
-            ObjectMapper objectMapper) {
+            ObjectMapper objectMapper,
+            PredictionService predictionService) {
 
         this.patientRepository = patientRepository;
         this.objectMapper = objectMapper;
+        this.predictionService = predictionService;
     }
 
     @KafkaListener(
@@ -60,6 +64,14 @@ public class PatientEventConsumer {
                 patient.setLatestVitals(vitals);
 
                 patientRepository.save(patient);
+
+                // Dynamically re-evaluate AI Cardiovascular Risk Model on live Kafka telemetry stream
+                try {
+                    predictionService.predictForPatient(patientEvent.getPatientId(), null);
+                    System.out.println("AI Risk Model dynamically re-evaluated via Kafka stream for: " + patientEvent.getPatientId());
+                } catch (Exception ex) {
+                    System.out.println("Notice: Non-blocking Kafka risk evaluation: " + ex.getMessage());
+                }
 
                 System.out.println(
                         "MongoDB updated with latest vitals for patient: "

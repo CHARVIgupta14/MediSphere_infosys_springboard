@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Activity, Users, LogOut, ShieldCheck } from 'lucide-react'
+import { Activity, Users, LogOut, ShieldCheck, Cpu } from 'lucide-react'
 import { clearSession } from '../services/session'
 
 export default function Sidebar({ role }) {
@@ -32,6 +32,10 @@ export default function Sidebar({ role }) {
             <span>Patients</span>
           </NavLink>
         )}
+        <NavLink to="/risk-prediction" className="sidebar-link">
+          <Cpu size={18} />
+          <span>AI Risk Engine</span>
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">

@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage'
 import PatientDashboard from './pages/PatientDashboard'
 import DoctorDashboard from './pages/DoctorDashboard'
 import DoctorPatient360 from './pages/DoctorPatient360'
+import RiskPredictionDashboard from './pages/RiskPredictionDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -34,6 +35,10 @@ export default function App() {
             <DoctorPatient360 />
           </ProtectedRoute>
         }
+      />
+      <Route
+        path="/risk-prediction"
+        element={<RiskPredictionDashboard />}
       />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

@@ -1,0 +1,280 @@
+<div class="dashboard-wrapper">
+  <!-- Top Navigation & Header -->
+  <header class="dashboard-header">
+    <div class="header-left">
+      <div class="brand-badge">
+        <span class="pulse-dot"></span>
+        <span>MediSphere Cognitive Twin</span>
+      </div>
+      <h1 class="dashboard-title">Milestone 2: Federated Learning & Risk Models</h1>
+      <p class="dashboard-subtitle">AI Risk Prediction Engine &bull; HIPAA Compliant Multi-Hospital Simulation</p>
+    </div>
+
+    <div class="header-right">
+      <div class="federated-status-pill">
+        <span class="status-indicator live"></span>
+        <span class="pill-label">TFF FedAvg: Round {{ flMetrics.round }} Active</span>
+      </div>
+      <button class="refresh-btn" (click)="fetchData()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">&#8635; Sync Telemetry</span>
+        <span *ngIf="isLoading">&#9203; Computing...</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Notification Toast -->
+  <div *ngIf="actionToast" class="action-toast" [ngClass]="actionToast.type">
+    <div class="toast-icon">
+      <span *ngIf="actionToast.type === 'success'">&#10004;</span>
+      <span *ngIf="actionToast.type === 'warning'">&#9888;</span>
+      <span *ngIf="actionToast.type === 'info'">&#8505;</span>
+    </div>
+    <div class="toast-content">
+      <strong>{{ actionToast.type | uppercase }}</strong>: {{ actionToast.text }}
+    </div>
+    <button class="toast-close" (click)="actionToast = null">&times;</button>
+  </div>
+
+  <!-- 3 KPI Cards Section -->
+  <section class="kpi-grid">
+    <!-- KPI 1: Risk Predictions Today -->
+    <div class="kpi-card card-cyan">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Risk Predictions Today</span>
+        <div class="kpi-value">{{ summary.totalPredictionsToday }}</div>
+        <span class="kpi-trend positive">&#8593; 14.8% vs yesterday</span>
+      </div>
+    </div>
+
+    <!-- KPI 2: Model Accuracy -->
+    <div class="kpi-card card-blue">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">Model Accuracy</span>
+        <div class="kpi-value">{{ (summary.modelAccuracy * 100) | number:'1.1-1' }}%</div>
+        <span class="kpi-meta">(Round {{ summary.round }}) &bull; Target &#8805;90%</span>
+      </div>
+    </div>
+
+    <!-- KPI 3: High Risk Patients -->
+    <div class="kpi-card card-crimson">
+      <div class="kpi-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="kpi-info">
+        <span class="kpi-label">High Risk Patients</span>
+        <div class="kpi-value">{{ summary.highRiskCount }}</div>
+        <span class="kpi-alert-badge">Require intervention</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Card: TensorFlow Federated - Cardiovascular Risk Prediction -->
+  <main class="main-prediction-card">
+    <div class="card-glow-edge"></div>
+
+    <!-- Card Header -->
+    <div class="card-header-bar">
+      <div class="patient-title-group">
+        <div class="avatar-circle">JD</div>
+        <div>
+          <h2 class="patient-name">{{ patientName }}</h2>
+          <div class="model-meta-line">
+            <span class="meta-tag">Model: <strong>{{ modelVersion }}</strong></span>
+            <span class="meta-divider">&bull;</span>
+            <span class="meta-tag">Federated Round: <strong>{{ federatedRound }}</strong></span>
+            <span class="meta-divider">&bull;</span>
+            <span class="meta-tag">ID: <code>{{ patientId }}</code></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="engine-badge">
+        <span class="tensorflow-icon">&#9650;</span>
+        <span>TensorFlow Federated &bull; FedAvg</span>
+      </div>
+    </div>
+
+    <!-- Clinical Features Grid (7 features) -->
+    <section class="features-section">
+      <h3 class="section-subheading">Patient Clinical Feature Vector (7 Features)</h3>
+      <div class="feature-chips-row">
+        <div *ngFor="let feat of clinicalFeatures" class="feature-chip" [ngClass]="feat.status">
+          <span class="chip-name">{{ feat.name }}</span>
+          <span class="chip-val">{{ feat.value }} <small *ngIf="feat.unit">{{ feat.unit }}</small></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Prediction & Explainability Body -->
+    <div class="risk-body-grid">
+      <!-- Left Column: Risk Probability Output & Gauge -->
+      <div class="risk-output-panel">
+        <div class="risk-score-box">
+          <span class="score-label">10-Year CVD Risk Score</span>
+          <div class="score-number-row">
+            <span class="big-score">{{ (prediction.probability * 100) | number:'1.1-1' }}%</span>
+            <span class="risk-badge high">High Risk</span>
+          </div>
+          <p class="score-description">
+            Estimated 10-year probability of atherosclerotic cardiovascular events computed via decentralized FedAvg ensemble.
+          </p>
+        </div>
+
+        <!-- Population Comparison Bar/Stat -->
+        <div class="comparison-card">
+          <div class="comparison-header">
+            <span class="comp-title">Population Risk Benchmark</span>
+            <span class="comp-ratio-badge">2x Higher Risk</span>
+          </div>
+
+          <div class="gauge-bar-track">
+            <div class="gauge-segment pop-segment" [style.width.%]="populationAverage">
+              <span class="bar-tag">Pop Avg: {{ populationAverage }}%</span>
+            </div>
+            <div class="gauge-segment patient-segment" [style.width.%]="patientRiskPercent">
+              <span class="bar-tag">Patient: {{ patientRiskPercent }}%</span>
+            </div>
+          </div>
+
+          <p class="comparison-stat-text">
+            <strong>Benchmark Analysis</strong>: {{ prediction.comparisonStat }}
+          </p>
+        </div>
+
+        <!-- Clinical Recommendation Box -->
+        <div class="recommendation-box">
+          <div class="rec-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="rec-icon">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            <span>Guideline-Directed Clinical Recommendation</span>
+          </div>
+          <p class="rec-text">{{ prediction.recommendation }}</p>
+        </div>
+      </div>
+
+      <!-- Right Column: SHAP Local Explainability Waterfall -->
+      <div class="shap-panel">
+        <div class="shap-header">
+          <div>
+            <h3 class="shap-title">SHAP Local Feature Attributions</h3>
+            <span class="shap-subtitle">Shapley additive attributions for John Doe</span>
+          </div>
+          <span class="shap-algorithm-tag">TreeExplainer</span>
+        </div>
+
+        <div class="shap-list">
+          <div *ngFor="let item of shapItems" class="shap-row">
+            <div class="shap-feat-label">{{ item.feature }}</div>
+            <div class="shap-bar-container">
+              <div class="shap-bar-track">
+                <div
+                  class="shap-bar-fill"
+                  [ngClass]="item.direction"
+                  [style.width.%]="item.impactPercent * 6"
+                ></div>
+              </div>
+            </div>
+            <div class="shap-score-val" [ngClass]="item.direction">
+              {{ item.label }}
+            </div>
+          </div>
+        </div>
+
+        <div class="shap-legend">
+          <span class="legend-item"><span class="legend-dot red"></span> Risk Factor Contributor (+)</span>
+          <span class="legend-item"><span class="legend-dot green"></span> Protective Factor (-)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons Bar -->
+    <footer class="card-action-footer">
+      <div class="action-buttons-group">
+        <!-- Doctor Actions: Generate Careplan, Alert Provider, Schedule Follow-up -->
+        <ng-container *ngIf="!isPatient">
+          <button class="btn btn-primary" (click)="generateCareplan()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+              <polyline points="10 9 9 9 8 9"/>
+            </svg>
+            <span>Generate Careplan</span>
+          </button>
+
+          <button class="btn btn-warning" (click)="alertProvider()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+            <span>Alert Provider</span>
+          </button>
+
+          <button class="btn btn-secondary" (click)="scheduleFollowUp()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>Schedule Follow-up</span>
+          </button>
+        </ng-container>
+
+        <!-- Patient Actions: Message Care Team, Request Follow-Up, Download Report (NO Careplan button) -->
+        <ng-container *ngIf="isPatient">
+          <button class="btn btn-primary" (click)="messageCareTeam()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span>Message Care Team</span>
+          </button>
+
+          <button class="btn btn-secondary" (click)="scheduleFollowUp()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+            <span>Request Follow-up Visit</span>
+          </button>
+
+          <button class="btn btn-secondary" (click)="downloadReport()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-svg">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Download Summary</span>
+          </button>
+        </ng-container>
+      </div>
+
+      <div class="hipaa-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="hipaa-lock">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+        <span>{{ isPatient ? 'Protected by HIPAA Privacy Safeguards' : 'Federated EHR Enclave • HIPAA Compliant' }}</span>
+      </div>
+    </footer>
+  </main>
+</div>
