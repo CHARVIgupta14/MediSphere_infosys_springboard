@@ -3,8 +3,10 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import PatientDashboard from './pages/PatientDashboard'
 import DoctorDashboard from './pages/DoctorDashboard'
+import DoctorPatientsPage from './pages/DoctorPatientsPage'
 import DoctorPatient360 from './pages/DoctorPatient360'
 import RiskPredictionDashboard from './pages/RiskPredictionDashboard'
+import LiveAlertsPage from './pages/LiveAlertsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 export default function App() {
@@ -25,6 +27,22 @@ export default function App() {
         element={
           <ProtectedRoute requiredRole="doctor">
             <DoctorDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor/patients"
+        element={
+          <ProtectedRoute requiredRole="doctor">
+            <DoctorPatientsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/doctor/alerts"
+        element={
+          <ProtectedRoute requiredRole="doctor">
+            <LiveAlertsPage />
           </ProtectedRoute>
         }
       />

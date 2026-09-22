@@ -6,6 +6,7 @@ import Topbar from '../components/Topbar'
 import PatientList from '../components/PatientList'
 import Loading from '../components/Loading'
 import ErrorMessage from '../components/ErrorMessage'
+import AlertPanel from '../components/AlertPanel'
 import { getDoctorDashboard, getErrorMessage } from '../services/api'
 
 export default function DoctorDashboard() {
@@ -72,15 +73,39 @@ export default function DoctorDashboard() {
                 </div>
               </div>
 
+              {/* Milestone 3: Real-Time Telemetry & Cardiologist Alert Engine */}
+              <AlertPanel />
+
               <div className="panel">
-                <div className="panel-head">
-                  <h2>All patients</h2>
-                  <span className="live-tag">
-                    <span className="dot live" />
-                    Live
-                  </span>
+                <div className="panel-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <h2>Patient Registry Overview</h2>
+                    <span className="live-tag">
+                      <span className="dot live" />
+                      Live Stream
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => navigate('/doctor/patients')}
+                    style={{
+                      background: 'rgba(56, 189, 248, 0.12)',
+                      border: '1px solid rgba(56, 189, 248, 0.35)',
+                      color: '#38bdf8',
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    Open Full Directory ({patients.length}) →
+                  </button>
                 </div>
-                <p className="panel-subtext">Click a patient to open their full Patient 360 dashboard.</p>
+                <p className="panel-subtext">Click any patient to open their comprehensive 360° clinical profile and real-time telemetry.</p>
                 <PatientList patients={patients} onSelect={(id) => navigate(`/doctor/patients/${id}`)} />
               </div>
             </>

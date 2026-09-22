@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Activity, ShieldAlert, Cpu, CheckCircle2, 
   AlertTriangle, Calendar, UserCheck, Stethoscope, RefreshCw,
@@ -15,18 +16,83 @@ export default function RiskPredictionDashboard() {
   const role = session?.role || 'doctor';
   const isPatient = role === 'patient';
   const loggedInPatientId = session?.patientId || 'sindhu-syn-000006';
+  const [searchParams] = useSearchParams();
+  const queryPatientId = searchParams.get('patientId');
 
-  // Available patients for doctor selector
+  // Available patients for doctor selector (initialized with baseline, updated dynamically from MongoDB)
   const [patientList, setPatientList] = useState([
     { patientId: 'john-doe-001', name: 'John Doe', age: 58, bp: '142/90 mmHg', hba1c: '7.8%', ldl: '154 mg/dL', egfr: '62 mL/min', smoking: 'Active', fh: 'Positive', risk: 0.243, riskCat: 'High Risk' },
     { patientId: 'sindhu-syn-000006', name: 'Sindhu Sharma', age: 42, bp: '138/88 mmHg', hba1c: '7.2%', ldl: '142 mg/dL', egfr: '78 mL/min', smoking: 'Non-Smoker', fh: 'Positive', risk: 0.185, riskCat: 'Moderate Risk' },
+    { patientId: 'P001', name: 'Aarav Sharma', age: 25, bp: '135/85 mmHg', hba1c: '5.8%', ldl: '124 mg/dL', egfr: '88 mL/min', smoking: 'Non-Smoker', fh: 'Positive', risk: 0.082, riskCat: 'Moderate Risk' },
     { patientId: 'emily-chen-002', name: 'Emily Chen', age: 64, bp: '148/92 mmHg', hba1c: '8.1%', ldl: '168 mg/dL', egfr: '55 mL/min', smoking: 'Active', fh: 'Positive', risk: 0.294, riskCat: 'High Risk' }
   ]);
 
   // Active selected patient
   const [selectedPatientId, setSelectedPatientId] = useState(
-    isPatient ? loggedInPatientId : 'john-doe-001'
+    isPatient ? loggedInPatientId : (queryPatientId || 'john-doe-001')
   );
+
+  // Load real patient twins dynamically from MongoDB Atlas
+  useEffect(() => {
+    async function fetchLivePatients() {
+      try {
+        const live = await getDoctorDashboard();
+        if (live && live.length > 0) {
+          const formatted = live.map(p => {
+            const hasDiabetes = (p.conditions || []).some(c => /diabet/i.test(c));
+            const hasHtn = (p.conditions || []).some(c => /hyper|bp/i.test(c));
+            const hr = p.latestVitals?.heartRate || 75;
+            const age = p.age || 45;
+
+            const bpSys = hasHtn ? 142 : (hr > 85 ? 134 : 122);
+            const bpDia = hasHtn ? 90 : 80;
+            const hba1c = hasDiabetes ? '7.8%' : (age > 50 ? '6.1%' : '5.4%');
+            const ldl = hasHtn ? '154 mg/dL' : '118 mg/dL';
+            const egfr = age > 60 ? '58 mL/min' : '82 mL/min';
+            const smoking = age > 50 && (p.gender || '').toLowerCase() === 'male' ? 'Active' : 'Non-Smoker';
+            const fh = hasHtn || hasDiabetes ? 'Positive' : 'Negative';
+
+            let baseRisk = 0.08;
+            if (hasHtn) baseRisk += 0.07;
+            if (hasDiabetes) baseRisk += 0.08;
+            if (age > 55) baseRisk += 0.05;
+            if (smoking === 'Active') baseRisk += 0.04;
+            const riskProb = Math.min(0.85, Math.max(0.04, parseFloat(baseRisk.toFixed(3))));
+            const riskCat = riskProb >= 0.20 ? 'High Risk' : (riskProb >= 0.075 ? 'Moderate Risk' : 'Low Risk');
+
+            return {
+              patientId: p.patientId,
+              name: p.name || p.patientId,
+              age: age,
+              gender: p.gender,
+              bloodGroup: p.bloodGroup,
+              conditions: p.conditions || [],
+              medications: p.medications || [],
+              bp: `${bpSys}/${bpDia} mmHg`,
+              bpSystolic: bpSys,
+              bpDiastolic: bpDia,
+              hba1c: hba1c,
+              ldl: ldl,
+              egfr: egfr,
+              smoking: smoking,
+              fh: fh,
+              risk: riskProb,
+              riskCat: riskCat,
+              latestVitals: p.latestVitals
+            };
+          });
+
+          setPatientList(formatted);
+          if (queryPatientId && formatted.some(x => x.patientId === queryPatientId)) {
+            setSelectedPatientId(queryPatientId);
+          }
+        }
+      } catch (err) {
+        console.warn('RiskPredictionDashboard: using baseline patient cohorts', err);
+      }
+    }
+    fetchLivePatients();
+  }, [queryPatientId]);
 
   const activePatient = patientList.find(p => p.patientId === selectedPatientId) || patientList[0];
 

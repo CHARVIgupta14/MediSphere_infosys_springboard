@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { Activity, Users, LogOut, ShieldCheck, Cpu } from 'lucide-react'
+import { Activity, Users, LogOut, ShieldCheck, Cpu, Bell } from 'lucide-react'
 import { clearSession } from '../services/session'
 
 export default function Sidebar({ role }) {
@@ -22,14 +22,20 @@ export default function Sidebar({ role }) {
       </div>
 
       <nav className="sidebar-nav">
-        <NavLink to={role === 'doctor' ? '/doctor' : '/patient'} className="sidebar-link">
+        <NavLink to={role === 'doctor' ? '/doctor' : '/patient'} end className="sidebar-link">
           <Activity size={18} />
           <span>Dashboard</span>
         </NavLink>
         {role === 'doctor' && (
-          <NavLink to="/doctor" className="sidebar-link">
+          <NavLink to="/doctor/patients" className="sidebar-link">
             <Users size={18} />
             <span>Patients</span>
+          </NavLink>
+        )}
+        {role === 'doctor' && (
+          <NavLink to="/doctor/alerts" className="sidebar-link">
+            <Bell size={18} />
+            <span>Telemetry & Alerts</span>
           </NavLink>
         )}
         <NavLink to="/risk-prediction" className="sidebar-link">
