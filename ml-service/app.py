@@ -158,7 +158,7 @@ def predict_cardiovascular_risk(request: PatientFeaturesRequest):
 if __name__ == "__main__":
     import uvicorn
     import numpy as np
-    logger.info("Starting MediSphere ML Microservice on port 8000...")
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    logger.info("Starting MediSphere ML Microservice on port 8005...")
+    uvicorn.run(app, host="0.0.0.0", port=8005)
 else:
     import numpy as np
