@@ -135,30 +135,6 @@ export default function AlertPanel({ patientId = null, compact = false }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
-            onClick={() => handleSimulate145BpmSpike(patientId || 'john-doe-001')}
-            disabled={simulating}
-            style={{
-              background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)',
-              color: '#ffffff',
-              border: 'none',
-              padding: '8px 14px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 4px 14px rgba(239, 68, 68, 0.4)',
-              transition: 'all 0.2s ease'
-            }}
-            title="Simulates an acute tachycardia event (HR = 145 BPM) on Kafka stream as specified in Milestone 3"
-          >
-            <Zap size={14} />
-            {simulating ? 'Broadcasting...' : '⚡ Test Spike (HR: 145 BPM)'}
-          </button>
-
-          <button
             onClick={fetchAlerts}
             style={{
               background: 'rgba(255,255,255,0.06)',

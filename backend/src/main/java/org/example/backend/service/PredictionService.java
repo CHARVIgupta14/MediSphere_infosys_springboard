@@ -27,7 +27,8 @@ public class PredictionService {
     private static final String DEFAULT_MODEL_NAME = "CVD-Risk-v3.2";
     private static final int DEFAULT_ROUND = 47;
     private static final float DEFAULT_ACCURACY = 0.914f;
-    private static final String ML_SERVICE_URL = "http://localhost:8000/api/v1/ml/predict";
+    @org.springframework.beans.factory.annotation.Value("${ml.service.url:http://localhost:8005/api/v1/ml/predict}")
+    private String mlServiceUrl = "http://localhost:8005/api/v1/ml/predict";
 
     private final PatientRepository patientRepository;
     private final RiskPredictionRepository riskPredictionRepository;
@@ -116,9 +117,9 @@ public class PredictionService {
         requestPayload.put("familyHistory", familyHistory);
 
         try {
-            log.info("Contacting AI/ML microservice at {}...", ML_SERVICE_URL);
+            log.info("Contacting AI/ML microservice at {}...", mlServiceUrl);
             Map<String, Object> response = restClient.post()
-                    .uri(ML_SERVICE_URL)
+                    .uri(mlServiceUrl)
                     .body(requestPayload)
                     .retrieve()
                     .body(Map.class);

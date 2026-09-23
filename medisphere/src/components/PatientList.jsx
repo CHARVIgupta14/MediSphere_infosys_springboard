@@ -15,7 +15,6 @@ export default function PatientList({ patients, selectedId, onSelect }) {
       <table>
         <thead>
           <tr>
-            <th>Patient Name</th>
             <th>Patient ID</th>
             <th>Diagnosis / Conditions</th>
             <th>Status</th>
@@ -40,11 +39,9 @@ export default function PatientList({ patients, selectedId, onSelect }) {
                 onClick={() => onSelect(p.patientId)}
                 style={{ cursor: 'pointer' }}
               >
-                <td>
-                  <strong style={{ color: '#f8fafc' }}>{p.name || 'Not available'}</strong>
-                  {p.age && <span style={{ color: '#94a3b8', fontSize: '12px', marginLeft: '6px' }}>({p.age}y)</span>}
+                <td className="mono" style={{ color: '#38bdf8', fontWeight: 600 }}>
+                  {p.patientId}
                 </td>
-                <td className="mono" style={{ color: '#38bdf8' }}>{p.patientId}</td>
                 <td style={{ color: '#cbd5e1', fontSize: '12px' }}>
                   {p.conditions && p.conditions.length > 0 ? p.conditions.join(', ') : '—'}
                 </td>

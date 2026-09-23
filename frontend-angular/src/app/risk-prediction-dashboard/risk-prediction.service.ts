@@ -38,12 +38,29 @@ export interface RiskPrediction {
   timestamp?: string;
 }
 
+export interface PatientAlert {
+  id: string;
+  patientId: string;
+  patientName: string;
+  vitalType: string;
+  vitalValue: number;
+  thresholdViolated: string;
+  severity: string;
+  status: string;
+  recipientRole: string;
+  doctorNotified: string;
+  message: string;
+  recommendedAction: string;
+  timestamp: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class RiskPredictionService {
 
   private readonly baseUrl = 'http://localhost:8080/api/v1';
+  private readonly alertUrl = 'http://localhost:8080/api/alerts';
 
   constructor(private http: HttpClient) {}
 
@@ -96,6 +113,68 @@ export class RiskPredictionService {
           'Family History': 0.015,
           'eGFR': -0.012
         }
+      }))
+    );
+  }
+
+  getAlerts(): Observable<PatientAlert[]> {
+    return this.http.get<PatientAlert[]>(this.alertUrl).pipe(
+      catchError(() => of([
+        {
+          id: 'alert-001',
+          patientId: 'john-doe-001',
+          patientName: 'John Doe',
+          vitalType: 'HEART_RATE',
+          vitalValue: 145.0,
+          thresholdViolated: '> 120 BPM (Acute Tachycardia Spike)',
+          severity: 'CRITICAL',
+          status: 'ACTIVE',
+          recipientRole: 'Cardiologist',
+          doctorNotified: 'Dr. Robert Hayes (On-Duty Cardiologist)',
+          message: 'CRITICAL ALERT: Acute Tachycardia detected. Heart rate jumped to 145 BPM.',
+          recommendedAction: 'Order immediate 12-lead ECG, assess telemetry rhythm, prepare IV beta-blocker protocol.',
+          timestamp: new Date().toISOString()
+        }
+      ]))
+    );
+  }
+
+  acknowledgeAlert(alertId: string, doctorName = 'Dr. Robert Hayes (Cardiologist)'): Observable<PatientAlert> {
+    return this.http.post<PatientAlert>(`${this.alertUrl}/${alertId}/acknowledge?doctorName=${encodeURIComponent(doctorName)}`, {}).pipe(
+      catchError(() => of({
+        id: alertId,
+        patientId: 'john-doe-001',
+        patientName: 'John Doe',
+        vitalType: 'HEART_RATE',
+        vitalValue: 145.0,
+        thresholdViolated: '> 120 BPM',
+        severity: 'CRITICAL',
+        status: 'ACKNOWLEDGED',
+        recipientRole: 'Cardiologist',
+        doctorNotified: doctorName,
+        message: 'Alert acknowledged.',
+        recommendedAction: 'Protocol underway.',
+        timestamp: new Date().toISOString()
+      }))
+    );
+  }
+
+  simulateCrisisSpike(patientId = 'john-doe-001', heartRate = 145): Observable<PatientAlert> {
+    return this.http.post<PatientAlert>(`${this.alertUrl}/simulate?patientId=${encodeURIComponent(patientId)}&heartRate=${heartRate}`, {}).pipe(
+      catchError(() => of({
+        id: 'sim-' + Date.now(),
+        patientId,
+        patientName: 'John Doe',
+        vitalType: 'HEART_RATE',
+        vitalValue: heartRate,
+        thresholdViolated: '> 120 BPM (Acute Tachycardia Spike)',
+        severity: 'CRITICAL',
+        status: 'ACTIVE',
+        recipientRole: 'Cardiologist',
+        doctorNotified: 'Dr. Robert Hayes (On-Duty Cardiologist)',
+        message: `CRITICAL ALERT: Acute Tachycardia detected. Heart rate jumped to ${heartRate} BPM.`,
+        recommendedAction: 'Order immediate 12-lead ECG, assess rhythm.',
+        timestamp: new Date().toISOString()
       }))
     );
   }

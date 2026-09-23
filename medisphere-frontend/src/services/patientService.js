@@ -30,3 +30,24 @@ export function getPatients() {
 export function getPatient360(patientId) {
   return request(`/api/patients/${encodeURIComponent(patientId)}/360`);
 }
+
+export function getAlerts() {
+  return request("/api/alerts");
+}
+
+export function getActiveAlerts() {
+  return request("/api/alerts/active");
+}
+
+export function acknowledgeAlert(alertId, doctorName = "Dr. Robert Hayes (Cardiologist)") {
+  return request(`/api/alerts/${encodeURIComponent(alertId)}/acknowledge?doctorName=${encodeURIComponent(doctorName)}`, {
+    method: "POST",
+  });
+}
+
+export function simulateAnomaly(patientId = "john-doe-001", heartRate = 145) {
+  return request(`/api/alerts/simulate?patientId=${encodeURIComponent(patientId)}&heartRate=${heartRate}`, {
+    method: "POST",
+  });
+}
+

@@ -22,14 +22,17 @@ public class PredictionDataInitializer implements CommandLineRunner {
     private final FLModelRepository flModelRepository;
     private final RiskPredictionRepository riskPredictionRepository;
     private final org.example.backend.repository.PatientRepository patientRepository;
+    private final org.example.backend.repository.AlertRepository alertRepository;
 
     public PredictionDataInitializer(
             FLModelRepository flModelRepository,
             RiskPredictionRepository riskPredictionRepository,
-            org.example.backend.repository.PatientRepository patientRepository) {
+            org.example.backend.repository.PatientRepository patientRepository,
+            org.example.backend.repository.AlertRepository alertRepository) {
         this.flModelRepository = flModelRepository;
         this.riskPredictionRepository = riskPredictionRepository;
         this.patientRepository = patientRepository;
+        this.alertRepository = alertRepository;
     }
 
     @Override
@@ -115,6 +118,44 @@ public class PredictionDataInitializer implements CommandLineRunner {
 
                 riskPredictionRepository.save(johnDoe);
                 log.info("Saved baseline RiskPrediction for John Doe (10-yr CVD Risk: 24.3%)");
+            }
+
+            // Seed Milestone 3 Real-Time Alerts if not present
+            if (alertRepository.count() == 0) {
+                log.info("Initializing Milestone 3 Real-Time Alerts in MongoDB...");
+
+                org.example.backend.model.Alert alert1 = new org.example.backend.model.Alert(
+                        "john-doe-001",
+                        "John Doe",
+                        "HEART_RATE",
+                        145.0,
+                        "> 120 BPM (Acute Tachycardia Spike)",
+                        "CRITICAL",
+                        "Cardiologist",
+                        "Dr. Robert Hayes (On-Duty Cardiologist)",
+                        "CRITICAL ALERT: Acute Tachycardia detected for John Doe. Heart rate jumped to 145 BPM. Potential ventricular arrhythmia or acute cardiac decompensation.",
+                        "Order immediate 12-lead ECG, assess telemetry rhythm, verify hemodynamics, prepare IV beta-blocker/antiarrhythmic protocol, notify on-call cardiologist immediately."
+                );
+                alertRepository.save(alert1);
+
+                org.example.backend.model.Alert alert2 = new org.example.backend.model.Alert(
+                        "sindhu-syn-000006",
+                        "Sindhu Sharma",
+                        "SPO2",
+                        88.5,
+                        "< 90% (Acute Hypoxemia)",
+                        "CRITICAL",
+                        "Pulmonologist / Rapid Response",
+                        "Dr. Sarah Lin (Pulmonology On-Duty)",
+                        "CRITICAL ALERT: Acute Hypoxemia detected for Sindhu Sharma. SpO2 dropped to 88.5%.",
+                        "Initiate high-flow supplemental oxygen therapy (2-4 L/min via nasal cannula), perform arterial blood gas (ABG), alert rapid response."
+                );
+                alert2.setStatus("ACKNOWLEDGED");
+                alert2.setAcknowledgedBy("Dr. Sarah Lin");
+                alert2.setAcknowledgedAt(java.time.LocalDateTime.now().minusMinutes(15));
+                alertRepository.save(alert2);
+
+                log.info("Saved baseline Milestone 3 Alerts: John Doe (HR 145 BPM - Critical Tachycardia) and Sindhu Sharma (SpO2 88.5% - Hypoxemia)");
             }
         } catch (Exception e) {
             log.warn("PredictionDataInitializer non-blocking notice: {}", e.getMessage());

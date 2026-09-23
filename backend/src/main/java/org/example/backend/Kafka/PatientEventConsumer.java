@@ -16,15 +16,18 @@ public class PatientEventConsumer {
     private final PatientRepository patientRepository;
     private final ObjectMapper objectMapper;
     private final PredictionService predictionService;
+    private final org.example.backend.service.AlertService alertService;
 
     public PatientEventConsumer(
             PatientRepository patientRepository,
             ObjectMapper objectMapper,
-            PredictionService predictionService) {
+            PredictionService predictionService,
+            org.example.backend.service.AlertService alertService) {
 
         this.patientRepository = patientRepository;
         this.objectMapper = objectMapper;
         this.predictionService = predictionService;
+        this.alertService = alertService;
     }
 
     @KafkaListener(
@@ -64,6 +67,22 @@ public class PatientEventConsumer {
                 patient.setLatestVitals(vitals);
 
                 patientRepository.save(patient);
+
+                // Milestone 3: Real-Time Anomaly Detection & Clinical Specialist Notification Engine
+                try {
+                    var alerts = alertService.evaluateVitalsAndAlert(
+                            patient.getPatientId(),
+                            patient.getName(),
+                            patientEvent.getHeartRate(),
+                            patientEvent.getSpo2(),
+                            patientEvent.getTemperature()
+                    );
+                    if (!alerts.isEmpty()) {
+                        System.out.println("🚨 Milestone 3 Alert Triggered: " + alerts.size() + " anomaly alert(s) dispatched for patient " + patient.getPatientId());
+                    }
+                } catch (Exception ex) {
+                    System.out.println("Notice: Milestone 3 Alert evaluation error: " + ex.getMessage());
+                }
 
                 // Dynamically re-evaluate AI Cardiovascular Risk Model on live Kafka telemetry stream
                 try {
