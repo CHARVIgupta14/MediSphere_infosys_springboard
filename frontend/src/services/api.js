@@ -694,6 +694,26 @@ export const getCarePlanSummary = async () => {
   }
 }
 
+export const createPatient = async (patientData) => {
+  try {
+    const res = await api.post('/patients', patientData)
+    return res.data
+  } catch (err) {
+    console.error('Error creating patient:', err)
+    throw err
+  }
+}
+
+export const importFhirPatient = async (patientId) => {
+  try {
+    const res = await api.post(`/fhir/patients/${encodeURIComponent(patientId)}/import`)
+    return res.data
+  } catch (err) {
+    console.error('Error importing FHIR patient:', err)
+    throw err
+  }
+}
+
 export default api
 
 

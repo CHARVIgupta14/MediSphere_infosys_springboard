@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Users, Search, Filter, ArrowRight, Heart, Activity, AlertTriangle, ShieldCheck, ChevronRight, HeartPulse, Wind, Thermometer } from 'lucide-react'
+import { Users, Search, Filter, ArrowRight, Heart, Activity, AlertTriangle, ShieldCheck, ChevronRight, HeartPulse, Wind, Thermometer, UserPlus } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
 import Loading from '../components/Loading'
 import ErrorMessage from '../components/ErrorMessage'
+import AddPatientModal from '../components/AddPatientModal'
 import { getDoctorDashboard, getActiveAlerts, getErrorMessage } from '../services/api'
 
 export default function DoctorPatientsPage() {
@@ -15,6 +16,7 @@ export default function DoctorPatientsPage() {
   const [error, setError] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [filterRisk, setFilterRisk] = useState('ALL') // 'ALL', 'CRITICAL', 'ELEVATED', 'STABLE'
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false)
   const firstLoad = useRef(true)
 
   const loadData = useCallback(async () => {
@@ -267,6 +269,30 @@ export default function DoctorPatientsPage() {
                     }}
                   >
                     Stable ({stablePatients.length})
+                  </button>
+
+                  <div style={{ width: '1px', height: '24px', background: 'var(--border)', margin: '0 4px' }} />
+
+                  <button
+                    onClick={() => setIsAddPatientOpen(true)}
+                    style={{
+                      padding: '7px 16px',
+                      borderRadius: '6px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      border: 'none',
+                      background: 'var(--blue)',
+                      color: '#ffffff',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 1px 3px rgba(37,99,235,0.3)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <UserPlus size={15} />
+                    Add Patient
                   </button>
                 </div>
               </div>
@@ -575,6 +601,11 @@ export default function DoctorPatientsPage() {
           )}
         </div>
       </div>
+      <AddPatientModal
+        isOpen={isAddPatientOpen}
+        onClose={() => setIsAddPatientOpen(false)}
+        onPatientAdded={() => loadData()}
+      />
     </div>
   )
 }

@@ -1,12 +1,13 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Radio, Users, Activity } from 'lucide-react'
+import { Radio, Users, Activity, UserPlus } from 'lucide-react'
 import Sidebar from '../components/Sidebar'
 import Topbar from '../components/Topbar'
 import PatientList from '../components/PatientList'
 import Loading from '../components/Loading'
 import ErrorMessage from '../components/ErrorMessage'
 import AlertPanel from '../components/AlertPanel'
+import AddPatientModal from '../components/AddPatientModal'
 import { getDoctorDashboard, getErrorMessage } from '../services/api'
 
 export default function DoctorDashboard() {
@@ -14,6 +15,7 @@ export default function DoctorDashboard() {
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false)
   const firstLoad = useRef(true)
 
   const loadList = useCallback(async () => {
@@ -85,25 +87,48 @@ export default function DoctorDashboard() {
                       Live Stream
                     </span>
                   </div>
-                  <button
-                    onClick={() => navigate('/doctor/patients')}
-                    style={{
-                      background: 'var(--blue-dim)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--blue)',
-                      padding: '6px 14px',
-                      borderRadius: '6px',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    Open Full Directory ({patients.length}) →
-                  </button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <button
+                      onClick={() => setIsAddPatientOpen(true)}
+                      style={{
+                        background: 'var(--blue)',
+                        border: 'none',
+                        color: '#ffffff',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 1px 3px rgba(37,99,235,0.3)',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      <UserPlus size={14} />
+                      Add Patient
+                    </button>
+                    <button
+                      onClick={() => navigate('/doctor/patients')}
+                      style={{
+                        background: 'var(--blue-dim)',
+                        border: '1px solid var(--border)',
+                        color: 'var(--blue)',
+                        padding: '6px 14px',
+                        borderRadius: '6px',
+                        fontSize: '12px',
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        transition: 'all 0.2s ease'
+                      }}
+                    >
+                      Open Full Directory ({patients.length}) →
+                    </button>
+                  </div>
                 </div>
                 <p className="panel-subtext">Click any patient to open their comprehensive 360° clinical profile and real-time telemetry.</p>
                 <PatientList patients={patients} onSelect={(id) => navigate(`/doctor/patients/${id}`)} />
@@ -112,6 +137,11 @@ export default function DoctorDashboard() {
           )}
         </div>
       </div>
+      <AddPatientModal
+        isOpen={isAddPatientOpen}
+        onClose={() => setIsAddPatientOpen(false)}
+        onPatientAdded={() => loadList()}
+      />
     </div>
   )
 }
