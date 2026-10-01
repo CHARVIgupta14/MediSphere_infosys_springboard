@@ -18,8 +18,9 @@ public class MongoConfig {
 
     @Bean
     public MongoClient mongoClient() {
+        String uri = connectionString != null ? connectionString.trim() : "";
         MongoClientSettings settings = MongoClientSettings.builder()
-                .applyConnectionString(new ConnectionString(connectionString))
+                .applyConnectionString(new ConnectionString(uri))
                 .uuidRepresentation(UuidRepresentation.STANDARD)
                 .build();
         return MongoClients.create(settings);

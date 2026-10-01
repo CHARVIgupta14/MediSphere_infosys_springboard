@@ -23,24 +23,29 @@ public class PredictionDataInitializer implements CommandLineRunner {
     private final RiskPredictionRepository riskPredictionRepository;
     private final org.example.backend.repository.PatientRepository patientRepository;
     private final org.example.backend.repository.AlertRepository alertRepository;
+    private final org.example.backend.repository.CarePlanRepository carePlanRepository;
+    private final CarePlanService carePlanService;
 
     public PredictionDataInitializer(
             FLModelRepository flModelRepository,
             RiskPredictionRepository riskPredictionRepository,
             org.example.backend.repository.PatientRepository patientRepository,
-            org.example.backend.repository.AlertRepository alertRepository) {
+            org.example.backend.repository.AlertRepository alertRepository,
+            org.example.backend.repository.CarePlanRepository carePlanRepository,
+            CarePlanService carePlanService) {
         this.flModelRepository = flModelRepository;
         this.riskPredictionRepository = riskPredictionRepository;
         this.patientRepository = patientRepository;
         this.alertRepository = alertRepository;
+        this.carePlanRepository = carePlanRepository;
+        this.carePlanService = carePlanService;
     }
 
     @Override
     public void run(String... args) {
         try {
-            // Seed demo patients if patient collection is empty
-            if (patientRepository.count() == 0) {
-                log.info("Initializing baseline PatientTwins in MongoDB...");
+            // Guarantee demo patients exist in MongoDB
+            if (patientRepository.findByPatientId("sindhu-syn-000006").isEmpty()) {
                 org.example.backend.model.PatientTwin sindhu = new org.example.backend.model.PatientTwin();
                 sindhu.setPatientId("sindhu-syn-000006");
                 sindhu.setName("Sindhu Sharma");
@@ -51,7 +56,10 @@ public class PredictionDataInitializer implements CommandLineRunner {
                 sindhu.setMedications(java.util.List.of("Metformin 500mg", "Lisinopril 10mg"));
                 sindhu.setLatestVitals(new org.example.backend.model.VitalSigns(76, 98.5, 36.8, java.time.LocalDateTime.now()));
                 patientRepository.save(sindhu);
+                log.info("Saved baseline demo PatientTwin: sindhu-syn-000006 in MongoDB");
+            }
 
+            if (patientRepository.findByPatientId("john-doe-001").isEmpty()) {
                 org.example.backend.model.PatientTwin john = new org.example.backend.model.PatientTwin();
                 john.setPatientId("john-doe-001");
                 john.setName("John Doe");
@@ -62,7 +70,7 @@ public class PredictionDataInitializer implements CommandLineRunner {
                 john.setMedications(java.util.List.of("Amlodipine 5mg", "Atorvastatin 20mg"));
                 john.setLatestVitals(new org.example.backend.model.VitalSigns(82, 97.2, 37.0, java.time.LocalDateTime.now()));
                 patientRepository.save(john);
-                log.info("Saved baseline demo PatientTwins: sindhu-syn-000006 and john-doe-001");
+                log.info("Saved baseline demo PatientTwin: john-doe-001 in MongoDB");
             }
             // Seed FLModel if not present
             if (flModelRepository.count() == 0) {
@@ -156,6 +164,20 @@ public class PredictionDataInitializer implements CommandLineRunner {
                 alertRepository.save(alert2);
 
                 log.info("Saved baseline Milestone 3 Alerts: John Doe (HR 145 BPM - Critical Tachycardia) and Sindhu Sharma (SpO2 88.5% - Hypoxemia)");
+            }
+
+            // Seed Milestone 4 Precision Care Plans if not present
+            if (carePlanRepository.count() == 0) {
+                log.info("Initializing Milestone 4 Precision Care Plans in MongoDB...");
+                try {
+                    org.example.backend.model.CarePlan cpJohn = carePlanService.getOrCreateCarePlanForPatient("john-doe-001");
+                    log.info("Seeded Milestone 4 CarePlan in MongoDB for John Doe: ID {}", cpJohn.getCarePlanId());
+
+                    org.example.backend.model.CarePlan cpSindhu = carePlanService.getOrCreateCarePlanForPatient("sindhu-syn-000006");
+                    log.info("Seeded Milestone 4 CarePlan in MongoDB for Sindhu Sharma: ID {}", cpSindhu.getCarePlanId());
+                } catch (Exception ex) {
+                    log.error("Failed to seed Milestone 4 CarePlans in MongoDB: {}", ex.getMessage());
+                }
             }
         } catch (Exception e) {
             log.warn("PredictionDataInitializer non-blocking notice: {}", e.getMessage());

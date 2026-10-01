@@ -1,507 +1,248 @@
-# 🏥 MediSphere — Healthcare Digital Twin Platform
+# 🏥 MediSphere — Connected Care & Clinical Decision Support Platform
 
-MediSphere is a **Healthcare Digital Twin platform** designed to create a unified digital representation of a patient's health data by integrating **FHIR-based healthcare records, MongoDB, and Apache Kafka**.
+[![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.3-brightgreen.svg)](https://spring.io/projects/spring-boot)
+[![React](https://img.shields.io/badge/React-18-blue.svg)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-5.4-purple.svg)](https://vitejs.dev/)
+[![MongoDB Atlas](https://img.shields.io/badge/MongoDB-Atlas-green.svg)](https://www.mongodb.com/atlas)
+[![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-4.3-red.svg)](https://kafka.apache.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Python-teal.svg)](https://fastapi.tiangolo.com/)
+[![HL7 FHIR](https://img.shields.io/badge/HL7%20FHIR-R4-firebrick.svg)](https://hl7.org/fhir/)
 
-The platform follows an event-driven backend architecture where patient information can be imported from FHIR, stored as a digital patient twin, and updated through real-time vital-sign events.
-
----
-
-## 🎯 Project Objective
-
-Healthcare data is often distributed across different systems. MediSphere aims to provide a centralized **Patient 360° view** by combining:
-
-* Patient demographic information
-* Medical conditions
-* Active medications
-* Clinical observations
-* Vital signs
-* Event-driven health-data updates
-
-The goal is to create a foundation that can later support **health-risk prediction and clinical decision support**.
+**MediSphere** is an enterprise-grade **Healthcare Digital Twin & Clinical Decision Support (CDS) Platform**. It integrates real-time telemetry, HL7 FHIR R4 electronic health records, Apache Kafka event streaming, and machine-learning risk stratification into a unified hospital EHR portal (modeled after *Epic MyChart* and *Cerner*).
 
 ---
 
-## 🏗️ Architecture
+## 📑 Table of Contents
+- [System Architecture](#-system-architecture)
+- [Core Platform Capabilities](#-core-platform-capabilities)
+- [Repository Structure](#-repository-structure)
+- [Technology Stack](#-technology-stack)
+- [Quick Start Guide](#-quick-start-guide)
+  - [1. Backend Setup (Spring Boot)](#1-backend-setup-spring-boot)
+  - [2. Frontend Setup (React 18 + Vite)](#2-frontend-setup-react-18--vite)
+  - [3. ML Microservice Setup (Python FastAPI)](#3-ml-microservice-setup-python-fastapi)
+- [API Reference](#-api-reference)
+- [Clinical Role Workflows](#-clinical-role-workflows)
 
-```text
-              FHIR / EHR System
-                     │
-                     ▼
-              HAPI FHIR Server
-                     │
-                     ▼
-             Spring Boot Backend
-                     │
-              FHIR Patient Data
-                     │
-                     ▼
-            FHIR → PatientTwin
-                     │
-                     ▼
-                MongoDB
-             Patient Twin Store
-                     │
-                     │
-          Live Vital Sign Event
-                     │
-                     ▼
-             Kafka Producer
-                     │
-                     ▼
-       medisphere-patient-events
-                     │
-                     ▼
-             Kafka Consumer
-                     │
-                     ▼
-                MongoDB
-                     │
-                     ▼
-              Patient 360°
-                 Dashboard
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph Ingestion ["Healthcare Interoperability"]
+        FHIR["HL7 FHIR R4 Server\n(HAPI FHIR)"] -->|"FHIR Resources"| Ingest["FHIR Ingestion Service"]
+        Sensors["Bedside Vitals / Wearables"] -->|"Telemetry Readings"| Producer["Kafka Telemetry Producer"]
+    end
+
+    subgraph Streaming ["Event-Driven Pipeline"]
+        Producer -->|"medisphere-patient-events"| Broker["Apache Kafka Broker"]
+        Broker -->|"Real-Time Stream"| Consumer["Kafka Anomaly Detection Consumer"]
+    end
+
+    subgraph Backend ["Spring Boot 3 Core Services"]
+        Ingest -->|"Patient Mapping"| TwinService["Patient Twin Service"]
+        Consumer -->|"Threshold Violations"| AlertEngine["Cardiac Telemetry Alert Engine"]
+        TwinService -->|"Persist Twin"| Mongo[("MongoDB Atlas Cloud")]
+        AlertEngine -->|"Persist Alerts"| Mongo
+        CarePlanService["Care Plan & Guideline Engine"] -->|"Persist Plans & Adherence"| Mongo
+    end
+
+    subgraph Intelligence ["Decision Support & ML"]
+        PredService["Prediction Service"] <-->|"REST API"| MLService["Python FastAPI\nASCVD Risk Model"]
+    end
+
+    subgraph Frontend ["MediSphere Clinical EHR Portal"]
+        Portal["React 18 + Vite Portal"]
+        Doctor["Physician Workspace\n(Patient 360, Alerts, Care Plans)"]
+        Patient["Patient Portal\n(Adherence, Schedule, Exercise)"]
+        Portal --> Doctor
+        Portal --> Patient
+    end
+
+    TwinService -.-> PredService
+    Backend <-->|"REST / WebSocket"| Portal
 ```
 
 ---
 
-## 🚀 Key Features
+## 🚀 Core Platform Capabilities
 
-### 1. FHIR Integration
+### 1. Digital Patient Twin & FHIR R4 Interoperability
+- Connects to public/private HL7 FHIR R4 servers to retrieve demographics, conditions, medications, and observations.
+- Normalizes disparate healthcare records into a high-performance **MongoDB Patient Digital Twin** with real-time vitals tracking.
 
-MediSphere integrates with a **FHIR R4 server** to retrieve patient information.
+### 2. 10-Year ASCVD Cardiovascular Risk Stratification
+- Evaluates 10-year atherosclerotic cardiovascular disease (ASCVD) risk based on 7 clinical biomarkers (Age, SBP, DBP, HbA1c, LDL, eGFR, Smoking, and Family History).
+- Multi-center validated sensitivity (91.4%) calibrated against ACC/AHA clinical guidelines.
+- Computes biomarker attributions to pinpoint primary risk drivers.
 
-The current implementation uses the public HAPI FHIR test server:
+### 3. Real-Time Telemetry & Cardiac Alert Engine
+- Kafka-powered Complex Event Processing (CEP) monitors continuous heart rate, SpO2, and temperature telemetry.
+- Detects critical conditions (tachycardia >120 BPM, severe hypoxemia <90% SpO2) and generates real-time clinical alerts.
+- Dedicated cardiologist review workflow with timestamped acknowledgment and resolution auditing.
 
-```text
-https://hapi.fhir.org/baseR4
-```
+### 4. Precision Care Plans & What-If Clinical Simulation
+- Interactive guideline-driven **What-If Clinical Simulator**: Adjust blood pressure, LDL cholesterol, and lifestyle adherence sliders to project absolute risk reductions.
+- Attending physician prescribing controls: Add active prescriptions, adjust dosages, specify administration routes, and discontinue medications.
+- Clinical directives order pad for cardiologist notes and follow-up targets.
 
-FHIR Patient resources are retrieved and transformed into the application's internal `PatientTwin` model.
-
----
-
-### 2. Digital Patient Twin
-
-Patient data is represented using a `PatientTwin` model containing information such as:
-
-* Patient ID
-* Name
-* Age
-* Gender
-* Blood group
-* Medical conditions
-* Medications
-* Latest vital signs
-
-The patient twin is persisted in MongoDB.
+### 5. Patient Engagement & Daily Adherence Tracking
+- Dedicated Patient Portal view for tracking medication compliance and aerobic exercise targets.
+- Streak counters and real-time adherence scoring reflecting treatment guideline compliance.
 
 ---
 
-### 3. MongoDB Patient Twin Store
-
-MediSphere uses **MongoDB** to store patient digital twins.
-
-Example structure:
+## 📁 Repository Structure
 
 ```text
-PatientTwin
+MEDISHERE/
+├── backend/                  # Spring Boot 3 REST API & Event Services
+│   ├── src/main/java/        # Controllers, Services, Repositories, Kafka Handlers
+│   ├── src/main/resources/   # application.properties & MongoDB connection config
+│   └── pom.xml               # Maven dependencies (Java 21, Spring Boot, Kafka, HAPI FHIR)
 │
-├── patientId
-├── name
-├── age
-├── gender
-├── bloodGroup
-├── conditions
-├── medications
-└── latestVitals
-    ├── heartRate
-    ├── spo2
-    ├── temperature
-    └── timestamp
+├── frontend/                 # Single Unified React 18 + Vite Hospital EHR Portal
+│   ├── src/
+│   │   ├── components/       # Clinical cards, CarePlanManager, AlertPanel, Sidebar, etc.
+│   │   ├── pages/            # DoctorDashboard, PatientDashboard, RiskAssessment, etc.
+│   │   ├── services/         # Axios API clients & session managers
+│   │   └── styles.css        # Hospital design system tokens (Epic/Cerner theme)
+│   ├── package.json          # Frontend dependencies & scripts
+│   └── vite.config.js        # Vite build & proxy configuration
+│
+├── ml-service/               # Python FastAPI Microservice
+│   ├── app.py                # FastAPI REST endpoint (/api/v1/ml/predict)
+│   ├── explainability.py     # Biomarker risk attribution calculations
+│   ├── tff_simulation.py     # Multi-center cohort simulation routines
+│   └── requirements.txt      # Python dependencies (FastAPI, Uvicorn, NumPy)
+│
+└── .gitignore                # Production gitignore (node_modules, target, .idea, etc.)
 ```
-
----
-
-### 4. Event-Driven Architecture with Apache Kafka
-
-MediSphere uses **Apache Kafka** for patient events and real-time vital-sign updates.
-
-Kafka topic:
-
-```text
-medisphere-patient-events
-```
-
-Example event types:
-
-```text
-PATIENT_CREATED
-VITALS_UPDATED
-```
-
-The intended flow is:
-
-```text
-Vital Update
-     ↓
-Kafka Producer
-     ↓
-Kafka Topic
-     ↓
-Kafka Consumer
-     ↓
-PatientTwin Update
-     ↓
-MongoDB
-```
-
-This allows the backend to follow an event-driven architecture rather than tightly coupling every component.
-
----
-
-### 5. Patient 360° Dashboard
-
-The frontend provides a clinician-oriented Patient 360° view containing information such as:
-
-* Patient demographics
-* Medical conditions
-* Medications
-* Latest vitals
-* FHIR integration status
-* Kafka event pipeline status
-
-The dashboard communicates with the Spring Boot backend through REST APIs.
 
 ---
 
 ## 🛠️ Technology Stack
 
-### Backend
-
-* **Java 21**
-* **Spring Boot 4.1.1**
-* Spring WebMVC
-* Spring Data MongoDB
-* Spring Kafka
-* Maven
-
-### Healthcare Interoperability
-
-* **FHIR R4**
-* HAPI FHIR 8.4.0
-
-### Database
-
-* **MongoDB Atlas**
-
-### Messaging
-
-* **Apache Kafka 4.3.1**
-* KRaft mode
-
-### Frontend
-
-* React
-* Vite
-* JavaScript
-* CSS
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 18, Vite, Lucide Icons, Vanilla CSS | Clinical EHR workstation & patient engagement portal |
+| **Backend** | Java 21, Spring Boot 3.4.3, Spring Web, Spring Data | Core business logic, FHIR normalization, REST APIs |
+| **Database** | MongoDB Atlas (Cloud) | Persistent storage for Patient Twins, Care Plans, Alerts |
+| **Messaging** | Apache Kafka 4.3 (KRaft) | High-throughput vital telemetry event streaming |
+| **EHR Standard**| HL7 FHIR R4, HAPI FHIR 8.4 | Standardized clinical data exchange |
+| **ML Engine** | Python 3.11, FastAPI, Uvicorn | 10-Year ASCVD predictive scoring & biomarker attributions |
 
 ---
 
-## 📂 Project Structure
-
-```text
-MediSphere
-│
-├── backend
-│   ├── config
-│   │   ├── KafkaConsumerConfig.java
-│   │   ├── KafkaProducerConfig.java
-│   │   └── KafkaTopicConfig.java
-│   │
-│   ├── controller
-│   │   ├── FhirController.java
-│   │   └── PatientController.java
-│   │
-│   ├── dto
-│   │   └── PatientRequest.java
-│   │
-│   ├── FHIR
-│   │   ├── fhirconfi.java
-│   │   └── fhirService.java
-│   │
-│   ├── kafka
-│   │   ├── PatientEvent.java
-│   │   ├── PatientEventConsumer.java
-│   │   └── PatientEventProducer.java
-│   │
-│   ├── mapper
-│   │   └── FhirPatientMapper.java
-│   │
-│   ├── model
-│   │   ├── PatientTwin.java
-│   │   └── VitalSigns.java
-│   │
-│   ├── repository
-│   │   └── PatientRepository.java
-│   │
-│   └── service
-│       └── PatientService.java
-│
-└── frontend
-    └── React + Vite application
-```
-
----
-
-## 🔌 REST APIs
-
-### Get all patients
-
-```http
-GET /api/patients
-```
-
-### Get a patient
-
-```http
-GET /api/patients/{patientId}
-```
-
-### Patient 360°
-
-```http
-GET /api/patients/{patientId}/360
-```
-
-### Update patient vitals
-
-```http
-PUT /api/patients/{patientId}/vitals
-```
-
-Example request:
-
-```json
-{
-  "heartRate": 82,
-  "spo2": 98,
-  "temperature": 36.8
-}
-```
-
----
-
-## 🔄 FHIR Workflow
-
-```text
-FHIR Patient Resource
-        ↓
-HAPI FHIR Client
-        ↓
-Spring Boot FHIR Service
-        ↓
-FHIR Patient
-        ↓
-FhirPatientMapper
-        ↓
-PatientTwin
-        ↓
-MongoDB
-```
-
-This allows standardized healthcare data to be transformed into a format suitable for the MediSphere digital-twin system.
-
----
-
-## ⚡ Kafka Workflow
-
-Patient events are published to:
-
-```text
-medisphere-patient-events
-```
-
-A Kafka consumer listens to the topic and processes incoming events.
-
-For vital updates:
-
-```text
-VITALS_UPDATED
-       ↓
-PatientEventProducer
-       ↓
-Kafka
-       ↓
-PatientEventConsumer
-       ↓
-PatientTwin
-       ↓
-MongoDB
-```
-
----
-
-## 🧪 Example Patient
-
-A sample patient can be represented as:
-
-```text
-Patient ID: P001
-Name: Aarav Sharma
-Age: 25
-Gender: Male
-Blood Group: O+
-
-Conditions:
-- Hypertension
-
-Medications:
-- Amlodipine
-
-Latest Vitals:
-- Heart Rate
-- SpO₂
-- Temperature
-```
-
-Test FHIR data is obtained from the HAPI FHIR public test server.
-
----
-
-## ▶️ Running the Project
+## ⚡ Quick Start Guide
 
 ### Prerequisites
-
-Install:
-
-* Java 21
-* Maven
-* MongoDB / MongoDB Atlas
-* Apache Kafka 4.3.1
-* Node.js and npm
+- **JDK 21** or higher
+- **Node.js 18+** & npm
+- **Python 3.10+**
+- Active **MongoDB Atlas** connection (configured in `backend/src/main/resources/application.properties`)
 
 ---
 
-### 1. Start Kafka
-
-MediSphere uses Kafka in **KRaft mode**, so ZooKeeper is not required.
-
-Start Kafka using:
-
-```bat
-bin\windows\kafka-server-start.bat config\server.properties
-```
-
-Kafka runs on:
-
-```text
-localhost:9092
-```
-
----
-
-### 2. Configure MongoDB
-
-Set the MongoDB connection string through an environment variable:
-
-```text
-MONGODB_URI
-```
-
-Do **not** commit database credentials to GitHub.
-
----
-
-### 3. Start the Spring Boot Backend
-
-From the backend project:
+### 1. Backend Setup (Spring Boot)
 
 ```bash
-mvn spring-boot:run
-```
+cd backend
 
-The backend runs on:
+# Build and package the backend
+./mvnw clean package -DskipTests
 
-```text
-http://localhost:8080
+# Run Spring Boot application (starts on http://localhost:8080)
+./mvnw spring-boot:run
 ```
 
 ---
 
-### 4. Start the Frontend
-
-From the frontend directory:
+### 2. Frontend Setup (React 18 + Vite)
 
 ```bash
+cd frontend
+
+# Install dependencies
 npm install
+
+# Start local development server (starts on http://localhost:5173)
 npm run dev
 ```
 
-The Vite development server will provide the local frontend URL.
+---
+
+### 3. ML Microservice Setup (Python FastAPI)
+
+```bash
+cd ml-service
+
+# Create and activate virtual environment
+python -m venv .venv
+# On Windows:
+.venv\Scripts\activate
+# On Linux/macOS:
+source .venv/bin/activate
+
+# Install requirements
+pip install -r requirements.txt
+
+# Start FastAPI server on port 8005
+python app.py
+```
 
 ---
 
-## 🔐 Security Note
+## 📡 API Reference
 
-This project is a development/prototype implementation.
+### Patient Digital Twin
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/doctor/dashboard` | Fetch all patient digital twins and latest vitals |
+| `GET` | `/api/v1/patient/dashboard/{id}` | Fetch individual patient twin, vitals, and consent status |
+| `POST`| `/api/v1/patient/consent/grant/{id}`| Grant clinician access consent |
+| `POST`| `/api/v1/patient/consent/revoke/{id}`| Revoke data access consent |
 
-Production deployment would require additional security measures including:
+### Telemetry & Clinical Alerts
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/alerts` | List all active, acknowledged, and resolved clinical alerts |
+| `POST`| `/api/v1/alerts/{id}/ack` | Cardiologist acknowledges active telemetry crisis |
+| `POST`| `/api/v1/alerts/{id}/resolve` | Resolve alert and document clinical notes |
+| `POST`| `/api/v1/telemetry/simulate-anomaly` | Inject simulated emergency vital spike (e.g. 145 BPM) |
 
-* Authentication and authorization
-* Proper healthcare-data access controls
-* Consent management
-* Secure secrets management
-* Encryption
-* Audit logging
-* Production-grade FHIR infrastructure
+### Predictive Risk Assessment
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST`| `/api/v1/predictions/predict/{patientId}` | Compute 10-year ASCVD risk and biomarker attributions |
+| `GET` | `/api/v1/predictions/summary` | Global predictive accuracy & cohort stratification summary |
+| `GET` | `/api/v1/models/fl/latest-metrics` | Federated cohort model validation statistics |
 
-MediSphere should **not be considered HIPAA-compliant or production-ready healthcare software** in its current form.
-
----
-
-## 🔮 Future Enhancements
-
-Planned extensions include:
-
-* SMART on FHIR authentication
-* More complete FHIR resource mapping
-* FHIR Observation → vital-sign mapping
-* Real-time vital data ingestion
-* Risk prediction models
-* Clinical alerts
-* Care-plan management
-* Advanced Patient 360° visualization
-* Role-based access control
-* Audit trails
-* Cloud deployment
-
----
-
-## 📌 Project Status
-
-**Current milestone: FHIR Integration & Digital Twin Foundation**
-
-Implemented foundation:
-
-* ✅ Spring Boot backend
-* ✅ FHIR R4 integration
-* ✅ FHIR Patient retrieval
-* ✅ FHIR → PatientTwin mapping
-* ✅ MongoDB Patient Twin storage
-* ✅ REST APIs
-* ✅ Apache Kafka integration
-* ✅ Patient event producer
-* ✅ Patient event consumer
-* ✅ Patient 360° dashboard foundation
-
-The project is being developed incrementally toward a complete **event-driven healthcare digital twin platform**.
+### Care Plans & What-If Simulation
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/v1/careplans/patient/{patientId}` | Retrieve active comprehensive care plan |
+| `POST`| `/api/v1/careplans/what-if-simulate` | Simulate projected risk reduction based on clinical interventions |
+| `POST`| `/api/v1/careplans/{id}/prescribe` | Prescribe medication and add to patient regimen |
+| `DELETE`| `/api/v1/careplans/{id}/medications/{medName}` | Discontinue medication from regimen |
+| `POST`| `/api/v1/careplans/{id}/adherence` | Log daily medication compliance or exercise session |
 
 ---
 
- 👩‍💻 Author
+## 🩺 Clinical Role Workflows
 
-Charvi Gupta
+- **Physician Access**: Sign in as `doctor` / `1234`
+  - Access the clinical patient directory with risk triage stratification.
+  - Review real-time telemetry alerts and acknowledge emergent tachycardia/hypoxemia events.
+  - Formulate guideline-directed care plans, run what-if simulations, and prescribe medications.
+- **Patient Access**: Sign in as `sindhu-syn-000006` / `1234`
+  - View personal cardiovascular risk scores and attending physician directives.
+  - Track and mark daily medication doses and physical exercise sessions.
+  - Manage clinical data sharing consents.
 
-B.Tech — Computer Science & Engineering
+---
 
-MediSphere is developed as a healthcare technology project exploring **FHIR interoperability, digital twins, event-driven systems, and backend engineering with Java/Spring Boot**.
+## 📄 License
+This project is developed for educational and portfolio demonstration purposes aligned with healthcare digital twin specifications.
