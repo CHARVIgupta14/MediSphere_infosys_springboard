@@ -71,3 +71,8 @@ scratch/
 temp/
 tmp/
 *.log
+
+# Presentations and documents
+*.pptx
+*.ppt
+
